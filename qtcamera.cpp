@@ -165,21 +165,24 @@ void qtCamera::setCamera(const QCameraInfo &cameraInfo)
             this, &qtCamera::displayCaptureError);
 
     updateCaptureMode();
-    m_camera->start();
 }
 
 void qtCamera::configureCaptureSettings()
 {
+    QList<QSize> supportedResolutions;
+    QSize size(0, 0);
     switch (m_camera->captureMode()) {
     case QCamera::CaptureStillImage:
     {
-        const QList<QSize> supportedResolutions = m_imageCapture->supportedResolutions();
+        supportedResolutions = m_imageCapture->supportedResolutions();
         for (const QSize &resolution : supportedResolutions) {
-            qDebug() << QString("%1x%2").arg(resolution.width()).arg(resolution.height());
+            if(size.width()<resolution.width() && size.height()<resolution.height())
+                size = resolution;
         }
+
         m_imageSettings.setCodec("jpeg");
         m_imageSettings.setQuality(QMultimedia::VeryHighQuality);
-//        m_imageSettings.setResolution();
+        m_imageSettings.setResolution(size);
         m_imageCapture->setEncodingSettings(m_imageSettings);
         break;
     }
@@ -190,20 +193,24 @@ void qtCamera::configureCaptureSettings()
             QString description = m_mediaRecorder->videoCodecDescription(codecName);
 //            qDebug() << codecName + ": " + description;
         }
-        const QList<QSize> resolutions = m_mediaRecorder->supportedResolutions();
-        for (const QSize &resolution : resolutions) {
-//            qDebug() << QString("%1x%2").arg(resolution.width()).arg(resolution.height());
-        }
 
         //containers
         const QStringList formats = m_mediaRecorder->supportedContainers();
         for (const QString &format : formats) {
 //            qDebug() << format;
         }
+
+        supportedResolutions = m_mediaRecorder->supportedResolutions();
+        for (const QSize &resolution : supportedResolutions) {
+            if(size.width()<resolution.width() && size.height()<resolution.height())
+                size = resolution;
+        }
+
         m_audioSettings.setCodec("audio/mpeg");
         m_audioSettings.setQuality(QMultimedia::VeryHighQuality);
         m_videoSettings.setCodec("video/x-h264");
         m_videoSettings.setQuality(QMultimedia::VeryHighQuality);
+        m_videoSettings.setResolution(size);
         m_mediaRecorder->setAudioSettings(m_audioSettings);
         m_mediaRecorder->setVideoSettings(m_videoSettings);
         m_mediaRecorder->setContainerFormat("video/quicktime");
@@ -290,7 +297,6 @@ void qtCamera::updateCaptureMode()
     if (m_camera->isCaptureModeSupported(captureMode)){
         m_camera->unload();
         m_camera->setCaptureMode(captureMode);
-        configureCaptureSettings();
         m_camera->start();
         if(captureMode == QCamera::CaptureStillImage){
             cameraMode = QString(QCAMERA_CAPTURE_MODE);
@@ -301,7 +307,9 @@ void qtCamera::updateCaptureMode()
         }
         modeButton->setText(cameraMode);
         captureButton->setText(capture);
+        configureCaptureSettings();
     }
+
 }
 
 void qtCamera::updateCameraState(QCamera::State state)
