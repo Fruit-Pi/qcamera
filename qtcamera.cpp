@@ -234,24 +234,43 @@ void qtCamera::updateRecordTime()
 
 void qtCamera::record()
 {
-    QString lo = locationDir + "/" + QString::number(videoCnt) + ".mov";
+    QFileInfo fi;
+    QString lo;
+
+    lo = locationDir + "/" + "VIDEO" + QString::number(videoCnt) + ".mov";
+    fi = QFileInfo(lo);
+
+    while(fi.isFile()){
+        videoCnt++;
+        lo = locationDir + "/" + "VIDEO" + QString::number(videoCnt) + ".mov";
+        fi = QFileInfo(lo);
+    }
+
     m_mediaRecorder->setOutputLocation(QUrl::fromLocalFile(lo));
     m_mediaRecorder->record();
-    captureButton->setText(tr("Recording"));
     updateRecordTime();
 }
 
 void qtCamera::stop()
 {
     m_mediaRecorder->stop();
-    videoCnt++;
-    captureButton->setText(tr("Recorde"));
 }
 
 void qtCamera::takeImage()
 {
     m_isCapturingImage = true;
-    QString lo = locationDir + "/" + QString::number(imageCnt) + ".jpg";
+    QFileInfo fi;
+    QString lo;
+
+    lo = locationDir + "/" + "PIC" + QString::number(imageCnt) + ".jpg";
+    fi = QFileInfo(lo);
+
+    while(fi.isFile()){
+        imageCnt++;
+        lo = locationDir + "/" + "PIC" + QString::number(imageCnt) + ".jpg";
+        fi = QFileInfo(lo);
+    }
+
     m_imageCapture->capture(lo);
 }
 
@@ -283,7 +302,7 @@ void qtCamera::updateCaptureMode()
             capture = "Capture";
         }else {
             cameraMode = QString(QCAMERA_VIDEO_MODE);
-            capture = "Recorde";
+            capture = "Record";
         }
         modeButton->setText(cameraMode);
         captureButton->setText(capture);
@@ -305,10 +324,12 @@ void qtCamera::updateRecorderState(QMediaRecorder::State state)
 {
     switch (state) {
     case QMediaRecorder::StoppedState:
+        captureButton->setText(tr("Record"));
         break;
     case QMediaRecorder::PausedState:
         break;
     case QMediaRecorder::RecordingState:
+        captureButton->setText(tr("Recording"));
         break;
     }
 }
@@ -329,7 +350,6 @@ void qtCamera::imageSaved(int id, const QString &fileName)
     statusBar()->showMessage(tr("Captured \"%1\"").arg(QDir::toNativeSeparators(fileName)));
     statusBar()->show();
     m_isCapturingImage = false;
-    imageCnt++;
     if (m_applicationExiting)
         close();
 }
