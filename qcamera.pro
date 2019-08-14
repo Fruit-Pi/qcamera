@@ -10,7 +10,5 @@ SOURCES = \
     main.cpp \
     qtcamera.cpp
 
-RESOURCES += qcamera.qrc
-
 INSTALLS += target
 

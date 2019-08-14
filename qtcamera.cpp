@@ -217,11 +217,6 @@ void qtCamera::configureCaptureSettings()
 QPushButton* qtCamera::getButton()
 {
     QPushButton *button = new QPushButton;
-    button->setStyleSheet("border-image: url(:/toolbutton.png);");
-    button->setStyleSheet("border-top:4");
-    button->setStyleSheet("border-right:15");
-    button->setStyleSheet("border-left:15");
-    button->setStyleSheet("border-bottom:4");
     button->setFixedSize(144, 70);
     return button;
 }
