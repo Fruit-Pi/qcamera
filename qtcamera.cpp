@@ -66,11 +66,23 @@
 
 #define QCAMERA_CAPTURE_MODE "Image Mode"
 #define QCAMERA_VIDEO_MODE "Video Mode"
+#define DIR_USERDATA "/userdata"
+#define DIR_HOME QStandardPaths::writableLocation(QStandardPaths::HomeLocation)
 Q_DECLARE_METATYPE(QCameraInfo)
 
 qtCamera::qtCamera()
 {
     initlayout();
+    QFileInfo fi(DIR_USERDATA);
+    if(fi.isDir()){
+        locationDir = DIR_USERDATA;
+    }else {
+        QFileInfo fi(DIR_HOME);
+        if(fi.isDir()){
+            locationDir = DIR_HOME;
+        }
+    }
+    imageCnt = videoCnt = 0;
     setCamera(QCameraInfo::defaultCamera());
 }
 
@@ -156,6 +168,52 @@ void qtCamera::setCamera(const QCameraInfo &cameraInfo)
     m_camera->start();
 }
 
+void qtCamera::configureCaptureSettings()
+{
+    switch (m_camera->captureMode()) {
+    case QCamera::CaptureStillImage:
+    {
+        const QList<QSize> supportedResolutions = m_imageCapture->supportedResolutions();
+        for (const QSize &resolution : supportedResolutions) {
+            qDebug() << QString("%1x%2").arg(resolution.width()).arg(resolution.height());
+        }
+        m_imageSettings.setCodec("jpeg");
+        m_imageSettings.setQuality(QMultimedia::VeryHighQuality);
+//        m_imageSettings.setResolution();
+        m_imageCapture->setEncodingSettings(m_imageSettings);
+        break;
+    }
+    case QCamera::CaptureVideo:
+    {
+        const QStringList supportedVideoCodecs = m_mediaRecorder->supportedVideoCodecs();
+        for (const QString &codecName : supportedVideoCodecs) {
+            QString description = m_mediaRecorder->videoCodecDescription(codecName);
+//            qDebug() << codecName + ": " + description;
+        }
+        const QList<QSize> resolutions = m_mediaRecorder->supportedResolutions();
+        for (const QSize &resolution : resolutions) {
+//            qDebug() << QString("%1x%2").arg(resolution.width()).arg(resolution.height());
+        }
+
+        //containers
+        const QStringList formats = m_mediaRecorder->supportedContainers();
+        for (const QString &format : formats) {
+//            qDebug() << format;
+        }
+        m_audioSettings.setCodec("audio/mpeg");
+        m_audioSettings.setQuality(QMultimedia::VeryHighQuality);
+        m_videoSettings.setCodec("video/x-h264");
+        m_videoSettings.setQuality(QMultimedia::VeryHighQuality);
+        m_mediaRecorder->setAudioSettings(m_audioSettings);
+        m_mediaRecorder->setVideoSettings(m_videoSettings);
+        m_mediaRecorder->setContainerFormat("video/quicktime");
+        break;
+    }
+    default:
+        break;
+    }
+}
+
 QPushButton* qtCamera::getButton()
 {
     QPushButton *button = new QPushButton;
@@ -176,19 +234,25 @@ void qtCamera::updateRecordTime()
 
 void qtCamera::record()
 {
+    QString lo = locationDir + "/" + QString::number(videoCnt) + ".mov";
+    m_mediaRecorder->setOutputLocation(QUrl::fromLocalFile(lo));
     m_mediaRecorder->record();
+    captureButton->setText(tr("Recording"));
     updateRecordTime();
 }
 
 void qtCamera::stop()
 {
     m_mediaRecorder->stop();
+    videoCnt++;
+    captureButton->setText(tr("Recorde"));
 }
 
 void qtCamera::takeImage()
 {
     m_isCapturingImage = true;
-    m_imageCapture->capture();
+    QString lo = locationDir + "/" + QString::number(imageCnt) + ".jpg";
+    m_imageCapture->capture(lo);
 }
 
 void qtCamera::displayCaptureError(int id, const QCameraImageCapture::Error error, const QString &errorString)
@@ -202,7 +266,7 @@ void qtCamera::displayCaptureError(int id, const QCameraImageCapture::Error erro
 void qtCamera::updateCaptureMode()
 {
     QCamera::CaptureModes captureMode;
-
+    QString capture;
     if (cameraMode.compare(QCAMERA_CAPTURE_MODE)){
         captureMode = QCamera::CaptureStillImage ;
     }else {
@@ -212,13 +276,17 @@ void qtCamera::updateCaptureMode()
     if (m_camera->isCaptureModeSupported(captureMode)){
         m_camera->unload();
         m_camera->setCaptureMode(captureMode);
+        configureCaptureSettings();
         m_camera->start();
         if(captureMode == QCamera::CaptureStillImage){
             cameraMode = QString(QCAMERA_CAPTURE_MODE);
+            capture = "Capture";
         }else {
             cameraMode = QString(QCAMERA_VIDEO_MODE);
+            capture = "Recorde";
         }
         modeButton->setText(cameraMode);
+        captureButton->setText(capture);
     }
 }
 
@@ -261,6 +329,7 @@ void qtCamera::imageSaved(int id, const QString &fileName)
     statusBar()->showMessage(tr("Captured \"%1\"").arg(QDir::toNativeSeparators(fileName)));
     statusBar()->show();
     m_isCapturingImage = false;
+    imageCnt++;
     if (m_applicationExiting)
         close();
 }

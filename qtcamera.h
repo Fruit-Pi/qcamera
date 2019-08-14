@@ -68,6 +68,7 @@ public:
     void initlayout();
 private slots:
     void setCamera(const QCameraInfo &cameraInfo);
+    void configureCaptureSettings();
     QPushButton* getButton();
     void record();
     void stop();
@@ -90,7 +91,10 @@ private:
     QPushButton *modeButton;
     QPushButton *exitButton;
     QPushButton *captureButton;
+    int imageCnt;
+    int videoCnt;
     QString cameraMode;
+    QString locationDir;
     QCameraViewfinder viewfinder;
     QScopedPointer<QCamera> m_camera;
     QScopedPointer<QCameraImageCapture> m_imageCapture;
