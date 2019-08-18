@@ -182,7 +182,7 @@ void qtCamera::configureCaptureSettings()
 
         m_imageSettings.setCodec("jpeg");
         m_imageSettings.setQuality(QMultimedia::VeryHighQuality);
-        m_imageSettings.setResolution(size);
+//        m_imageSettings.setResolution(size);
         m_imageCapture->setEncodingSettings(m_imageSettings);
         break;
     }
@@ -210,7 +210,7 @@ void qtCamera::configureCaptureSettings()
         m_audioSettings.setQuality(QMultimedia::VeryHighQuality);
         m_videoSettings.setCodec("video/x-h264");
         m_videoSettings.setQuality(QMultimedia::VeryHighQuality);
-        m_videoSettings.setResolution(size);
+//        m_videoSettings.setResolution(size);
         m_mediaRecorder->setAudioSettings(m_audioSettings);
         m_mediaRecorder->setVideoSettings(m_videoSettings);
         m_mediaRecorder->setContainerFormat("video/quicktime");
