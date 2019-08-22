@@ -155,6 +155,8 @@ void qtCamera::setCamera(const QCameraInfo &cameraInfo)
 
     m_mediaRecorder->setMetaData(QMediaMetaData::Title, QVariant(QLatin1String("Test Title")));
 
+    configureCaptureSettings();
+
     m_camera->setViewfinder(&viewfinder);
 
     updateCameraState(m_camera->state());
@@ -169,55 +171,55 @@ void qtCamera::setCamera(const QCameraInfo &cameraInfo)
 
 void qtCamera::configureCaptureSettings()
 {
-    QList<QSize> supportedResolutions;
-    QSize size(0, 0);
-    switch (m_camera->captureMode()) {
-    case QCamera::CaptureStillImage:
-    {
+    QSize size(640, 480);
+
+    m_imageSettings.setCodec("jpeg");
+    m_imageSettings.setQuality(QMultimedia::VeryHighQuality);
+    m_imageSettings.setResolution(size);
+    m_imageCapture->setEncodingSettings(m_imageSettings);
+
+    m_audioSettings.setCodec("audio/x-adpcm");
+    m_audioSettings.setChannelCount(2);
+    m_audioSettings.setQuality(QMultimedia::NormalQuality);
+    m_mediaRecorder->setAudioSettings(m_audioSettings);
+
+    m_videoSettings.setCodec("video/x-h264");
+    m_videoSettings.setResolution(size);
+    m_videoSettings.setQuality(QMultimedia::NormalQuality);
+    m_mediaRecorder->setVideoSettings(m_videoSettings);
+
+    m_mediaRecorder->setContainerFormat("video/quicktime");
+
+    if (0) {
+        QList<QSize> supportedResolutions;
         supportedResolutions = m_imageCapture->supportedResolutions();
         for (const QSize &resolution : supportedResolutions) {
-            if(size.width()<resolution.width() && size.height()<resolution.height())
-                size = resolution;
+             qDebug() << "image resolution: " << resolution.width() << "x" << resolution.height();
         }
 
-        m_imageSettings.setCodec("jpeg");
-        m_imageSettings.setQuality(QMultimedia::VeryHighQuality);
-        m_imageSettings.setResolution(size);
-        m_imageCapture->setEncodingSettings(m_imageSettings);
-        break;
-    }
-    case QCamera::CaptureVideo:
-    {
+        const QStringList supportedAudioCodecs = m_mediaRecorder->supportedAudioCodecs();
+        for (const QString &codecName : supportedAudioCodecs) {
+            QString description = m_mediaRecorder->audioCodecDescription(codecName);
+            qDebug() << "audio codec:" << codecName + ": " + description;
+        }
+
         const QStringList supportedVideoCodecs = m_mediaRecorder->supportedVideoCodecs();
         for (const QString &codecName : supportedVideoCodecs) {
             QString description = m_mediaRecorder->videoCodecDescription(codecName);
-//            qDebug() << codecName + ": " + description;
+            qDebug() << "video codec:" << codecName + ": " + description;
         }
 
-        //containers
         const QStringList formats = m_mediaRecorder->supportedContainers();
         for (const QString &format : formats) {
-//            qDebug() << format;
+            QString description = m_mediaRecorder->containerDescription(format);
+            qDebug() << "container: " << format << ": " << description;
         }
 
+        QList<QSize> supportedResolutions;
         supportedResolutions = m_mediaRecorder->supportedResolutions();
         for (const QSize &resolution : supportedResolutions) {
-            if(size.width()<resolution.width() && size.height()<resolution.height())
-                size = resolution;
+            qDebug() << "video resolution: " << resolution.width() << "x" << resolution.height();
         }
-
-        m_audioSettings.setCodec("audio/mpeg");
-        m_audioSettings.setQuality(QMultimedia::VeryHighQuality);
-        m_videoSettings.setCodec("video/x-h264");
-        m_videoSettings.setQuality(QMultimedia::VeryHighQuality);
-        m_videoSettings.setResolution(size);
-        m_mediaRecorder->setAudioSettings(m_audioSettings);
-        m_mediaRecorder->setVideoSettings(m_videoSettings);
-        m_mediaRecorder->setContainerFormat("video/quicktime");
-        break;
-    }
-    default:
-        break;
     }
 }
 
@@ -307,9 +309,7 @@ void qtCamera::updateCaptureMode()
         }
         modeButton->setText(cameraMode);
         captureButton->setText(capture);
-        configureCaptureSettings();
     }
-
 }
 
 void qtCamera::updateCameraState(QCamera::State state)
