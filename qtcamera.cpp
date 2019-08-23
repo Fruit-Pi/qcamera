@@ -197,6 +197,11 @@ void qtCamera::configureCaptureSettings()
              qDebug() << "image resolution: " << resolution.width() << "x" << resolution.height();
         }
 
+        supportedResolutions = m_mediaRecorder->supportedResolutions();
+        for (const QSize &resolution : supportedResolutions) {
+            qDebug() << "video resolution: " << resolution.width() << "x" << resolution.height();
+        }
+
         const QStringList supportedAudioCodecs = m_mediaRecorder->supportedAudioCodecs();
         for (const QString &codecName : supportedAudioCodecs) {
             QString description = m_mediaRecorder->audioCodecDescription(codecName);
@@ -213,12 +218,6 @@ void qtCamera::configureCaptureSettings()
         for (const QString &format : formats) {
             QString description = m_mediaRecorder->containerDescription(format);
             qDebug() << "container: " << format << ": " << description;
-        }
-
-        QList<QSize> supportedResolutions;
-        supportedResolutions = m_mediaRecorder->supportedResolutions();
-        for (const QSize &resolution : supportedResolutions) {
-            qDebug() << "video resolution: " << resolution.width() << "x" << resolution.height();
         }
     }
 }
