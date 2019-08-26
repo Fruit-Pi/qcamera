@@ -97,11 +97,13 @@ void qtCamera::initlayout()
         qDebug() << cameraInfo.description();
         QPushButton *camera = getButton();
         camera->setText(cameraInfo.description());
+        camera->setCheckable(true);
         if (cameraInfo == QCameraInfo::defaultCamera()){
-            camera->setChecked(true);
+            camera->setDefault(true);
         }else {
-            camera->setChecked(false);
+            camera->setDefault(false);
         }
+        connect(camera, SIGNAL(clicked(bool)), this, SLOT(on_cameraSwitch()));
         vLayout->addWidget(camera);
     }
 
@@ -364,6 +366,30 @@ void qtCamera::closeEvent(QCloseEvent *event)
         event->ignore();
     } else {
         event->accept();
+    }
+}
+
+void qtCamera::on_cameraSwitch()
+{
+    QList<QPushButton *> buttons = centralWidget()->findChildren<QPushButton *>();
+    for(auto *bt: buttons){
+        if(bt->isChecked()){
+            for(auto *button: buttons){
+                if(button->isDefault())
+                    button->setDefault(false);
+            }
+            bt->setDefault(true);
+            bt->setChecked(false);
+            qDebug() << "switch to " + bt->text();
+            const QList<QCameraInfo> availableCameras = QCameraInfo::availableCameras();
+            for (const QCameraInfo &cameraInfo : availableCameras) {
+                if(! bt->text().compare(cameraInfo.description())){
+                    qDebug() << cameraInfo.description();
+                    setCamera(cameraInfo);
+                }
+            }
+            break;
+        }
     }
 }
 

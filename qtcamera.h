@@ -82,6 +82,7 @@ private slots:
     void updateRecorderState(QMediaRecorder::State state);
     void updateRecordTime();
     void imageSaved(int id, const QString &fileName);
+    void on_cameraSwitch();
     void on_captureClicked();
     void on_exitClicked();
 protected:
