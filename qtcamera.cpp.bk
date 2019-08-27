@@ -94,7 +94,7 @@ void qtCamera::initlayout()
 
     const QList<QCameraInfo> availableCameras = QCameraInfo::availableCameras();
     for (const QCameraInfo &cameraInfo : availableCameras) {
-        qDebug() << cameraInfo.description();
+//        qDebug() << cameraInfo.description();
         QPushButton *camera = getButton();
         camera->setText(cameraInfo.description());
         camera->setCheckable(true);
@@ -218,9 +218,33 @@ void qtCamera::configureCaptureSettings()
 
         const QStringList formats = m_mediaRecorder->supportedContainers();
         for (const QString &format : formats) {
+<<<<<<< Updated upstream
             QString description = m_mediaRecorder->containerDescription(format);
             qDebug() << "container: " << format << ": " << description;
         }
+=======
+            qDebug() << format;
+        }
+
+        supportedResolutions = m_mediaRecorder->supportedResolutions();
+        for (const QSize &resolution : supportedResolutions) {
+            if(size.width()<resolution.width() && size.height()<resolution.height())
+                size = resolution;
+        }
+
+        m_audioSettings.setCodec("audio/mpeg");
+        m_audioSettings.setQuality(QMultimedia::VeryHighQuality);
+        m_videoSettings.setCodec("video/x-h264");
+        m_videoSettings.setQuality(QMultimedia::VeryHighQuality);
+        m_videoSettings.setResolution(size);
+        m_mediaRecorder->setAudioSettings(m_audioSettings);
+        m_mediaRecorder->setVideoSettings(m_videoSettings);
+        m_mediaRecorder->setContainerFormat("video/quicktime, variant=(string)iso");
+        break;
+    }
+    default:
+        break;
+>>>>>>> Stashed changes
     }
 }
 
@@ -372,18 +396,18 @@ void qtCamera::closeEvent(QCloseEvent *event)
 void qtCamera::on_cameraSwitch()
 {
     QList<QPushButton *> buttons = centralWidget()->findChildren<QPushButton *>();
-    for(auto *bt: buttons){
-        if(bt->isChecked()){
+    for(auto *but: buttons){
+        if(but->isChecked()){
             for(auto *button: buttons){
                 if(button->isDefault())
                     button->setDefault(false);
             }
-            bt->setDefault(true);
-            bt->setChecked(false);
-            qDebug() << "switch to " + bt->text();
+            but->setDefault(true);
+            but->setChecked(false);
+            qDebug() << "switch to " + but->text();
             const QList<QCameraInfo> availableCameras = QCameraInfo::availableCameras();
             for (const QCameraInfo &cameraInfo : availableCameras) {
-                if(! bt->text().compare(cameraInfo.description())){
+                if(! but->text().compare(cameraInfo.description())){
                     qDebug() << cameraInfo.description();
                     setCamera(cameraInfo);
                 }
@@ -395,7 +419,7 @@ void qtCamera::on_cameraSwitch()
 
 void qtCamera::on_captureClicked()
 {
-    if (m_camera->captureMode() == QCamera::CaptureStillImage && m_imageCapture->isReadyForCapture()) {
+    if (m_camera->captureMode() == QCamera::CaptureStillImage) {
         takeImage();
     } else {
         if (m_mediaRecorder->state() == QMediaRecorder::RecordingState)
