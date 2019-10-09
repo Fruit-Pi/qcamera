@@ -63,7 +63,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
-
+#define FONT_SIZE 12
 #define QCAMERA_CAPTURE_MODE "Image Mode"
 #define QCAMERA_VIDEO_MODE "Video Mode"
 #define DIR_USERDATA "/userdata"
@@ -90,6 +90,8 @@ void qtCamera::initlayout()
 {
     QBoxLayout *vLayout = new QVBoxLayout();
     const QRect availableGeometry = QApplication::desktop()->availableGeometry(this);
+    QFont font;
+    font.setPixelSize(FONT_SIZE);
     resize(availableGeometry.width(), availableGeometry.height());
 
     const QList<QCameraInfo> availableCameras = QCameraInfo::availableCameras();
@@ -97,6 +99,7 @@ void qtCamera::initlayout()
         qDebug() << cameraInfo.description();
         QPushButton *camera = getButton();
         camera->setText(cameraInfo.description());
+        camera->setFont(font);
         camera->setCheckable(true);
         if (cameraInfo == QCameraInfo::defaultCamera()){
             camera->setDefault(true);
@@ -109,14 +112,17 @@ void qtCamera::initlayout()
 
     modeButton = getButton();
     modeButton->setText(cameraMode);
+    modeButton->setFont(font);
     connect(modeButton, SIGNAL(clicked(bool)), this, SLOT(updateCaptureMode()));
 
     captureButton = getButton();
     captureButton->setText(tr("Capture"));
+    captureButton->setFont(font);
     connect(captureButton, SIGNAL(clicked(bool)), this, SLOT(on_captureClicked()));
 
     exitButton = getButton();
     exitButton->setText(tr("Exit"));
+    exitButton->setFont(font);
     connect(exitButton, SIGNAL(clicked(bool)), this, SLOT(on_exitClicked()));
 
     vLayout->addWidget(modeButton);
