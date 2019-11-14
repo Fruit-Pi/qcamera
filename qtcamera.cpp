@@ -131,7 +131,7 @@ void qtCamera::initlayout()
     vLayout->setAlignment(Qt::AlignTop);
 
     viewfinder.setWindowFlag(Qt::FramelessWindowHint);
-    viewfinder.setFixedSize(availableGeometry.width() - 150, availableGeometry.height());
+    //viewfinder.setFixedSize(availableGeometry.width() - 150, availableGeometry.height());
 
     QBoxLayout *hlayout = new QHBoxLayout;
     hlayout->setMargin(0);
@@ -141,7 +141,7 @@ void qtCamera::initlayout()
     QWidget *widget = new QWidget;
     widget->setLayout(hlayout);
     setCentralWidget(widget);
-//    setWindowState(Qt::WindowMaximized);
+    setWindowState(Qt::WindowMaximized);
     setWindowFlags(Qt::FramelessWindowHint);
 }
 
@@ -401,9 +401,10 @@ void qtCamera::on_cameraSwitch()
 
 void qtCamera::on_captureClicked()
 {
-    if (m_camera->captureMode() == QCamera::CaptureStillImage && m_imageCapture->isReadyForCapture()) {
-        takeImage();
-    } else {
+    if (m_camera->captureMode() == QCamera::CaptureStillImage) {
+        if(m_imageCapture->isReadyForCapture())
+            takeImage();
+    } else if(m_camera->captureMode() == QCamera::CaptureVideo){
         if (m_mediaRecorder->state() == QMediaRecorder::RecordingState)
             stop();
         else
