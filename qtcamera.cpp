@@ -158,6 +158,7 @@ void qtCamera::setCamera(const QCameraInfo &cameraInfo)
     m_imageCapture.reset(new QCameraImageCapture(m_camera.data()));
 
     connect(m_mediaRecorder.data(), &QMediaRecorder::durationChanged, this, &qtCamera::updateRecordTime);
+    //connect(mediaRecorder, SIGNAL(durationChanged(qint64)), this, SLOT(changeDuration(qint64)));
     connect(m_mediaRecorder.data(), QOverload<QMediaRecorder::Error>::of(&QMediaRecorder::error),
             this, &qtCamera::displayRecorderError);
 
@@ -239,7 +240,16 @@ QPushButton* qtCamera::getButton()
 
 void qtCamera::updateRecordTime()
 {
-    QString str = QString("Recorded %1 sec").arg(m_mediaRecorder->duration()/1000);
+    quint32 dura_smal;
+    quint64 duration;
+
+    qDebug() << "video duration:" << m_mediaRecorder->duration();
+    dura_smal = m_mediaRecorder->duration() % 1000;
+    duration = m_mediaRecorder->duration() / 1000;
+    if (dura_smal >= 500)
+        duration += 1;
+
+    QString str = QString("Recorded %1 sec").arg(duration);
     statusBar()->showMessage(str);
 }
 
