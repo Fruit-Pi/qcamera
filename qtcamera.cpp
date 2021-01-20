@@ -158,7 +158,6 @@ void qtCamera::setCamera(const QCameraInfo &cameraInfo)
     m_imageCapture.reset(new QCameraImageCapture(m_camera.data()));
 
     connect(m_mediaRecorder.data(), &QMediaRecorder::durationChanged, this, &qtCamera::updateRecordTime);
-    //connect(mediaRecorder, SIGNAL(durationChanged(qint64)), this, SLOT(changeDuration(qint64)));
     connect(m_mediaRecorder.data(), QOverload<QMediaRecorder::Error>::of(&QMediaRecorder::error),
             this, &qtCamera::displayRecorderError);
 
@@ -243,7 +242,6 @@ void qtCamera::updateRecordTime()
     quint32 dura_smal;
     quint64 duration;
 
-    qDebug() << "video duration:" << m_mediaRecorder->duration();
     dura_smal = m_mediaRecorder->duration() % 1000;
     duration = m_mediaRecorder->duration() / 1000;
     if (dura_smal >= 500)
