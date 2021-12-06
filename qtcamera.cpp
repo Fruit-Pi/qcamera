@@ -83,7 +83,17 @@ qtCamera::qtCamera()
         }
     }
     imageCnt = videoCnt = 0;
-    setCamera(QCameraInfo::defaultCamera());
+    const QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+    bool found_mainpath = false;
+    for (const QCameraInfo &cameraInfo : cameras) {
+            qDebug() << cameraInfo.description();
+            if (!cameraInfo.description().compare("rkisp_mainpath")) {
+                found_mainpath = true;
+                setCamera(cameraInfo);
+            }
+    }
+    if (!found_mainpath)
+        setCamera(QCameraInfo::defaultCamera());
 }
 
 void qtCamera::initlayout()
